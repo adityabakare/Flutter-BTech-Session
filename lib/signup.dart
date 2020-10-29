@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+import 'ProfilePage.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -6,6 +11,11 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  String name;
+  String userName;
+  String email;
+  String password;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,6 +38,9 @@ class _SignUpState extends State<SignUp> {
                         child: Icon(Icons.person)),
                     hintText: "Username",
                     border: InputBorder.none),
+                onChanged: (value) {
+                  userName = value;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(
@@ -38,6 +51,9 @@ class _SignUpState extends State<SignUp> {
                         child: Icon(Icons.person)),
                     hintText: "Name",
                     border: InputBorder.none),
+                onChanged: (value) {
+                  name = value;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(
@@ -48,6 +64,9 @@ class _SignUpState extends State<SignUp> {
                         child: Icon(Icons.person)),
                     hintText: "Email",
                     border: InputBorder.none),
+                onChanged: (value) {
+                  email = value;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(
@@ -59,9 +78,14 @@ class _SignUpState extends State<SignUp> {
                     hintText: "Password",
                     border: InputBorder.none),
                 obscureText: true,
+                onChanged: (value) {
+                  password = value;
+                },
               ),
               RaisedButton(
-                onPressed: () {},
+                onPressed: () {
+                  signup();
+                },
                 child: Text("SignUp"),
                 elevation: 0,
                 highlightElevation: 0,
@@ -72,5 +96,24 @@ class _SignUpState extends State<SignUp> {
         ),
       )),
     );
+  }
+
+  signup() async {
+    try {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      FirebaseFirestore db = FirebaseFirestore.instance;
+
+      await auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+
+      Map<String, dynamic> data = {'name': name, 'userName': userName};
+
+      db.collection('users').doc(email).set(data);
+
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => ProfilePage()));
+    } catch (err) {
+      print(err.toString());
+    }
   }
 }
